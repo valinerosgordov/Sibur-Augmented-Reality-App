@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<QCARConfig>
+    <Tracking>
+        <ModelTarget name="silos_3_mesh_" trackingMode="car" motionHint="static" upVector="0.0 1.0 0.0" optimizeTrackingFor="low_feature_objects"></ModelTarget>
+    </Tracking>
+    <Assembly name="silos_3_mesh_" assemblyId="7ed541b5f4a0473f89d40441722c95c9">
+        <Part name="silos_3_mesh_" translation="0 0 0" rotation="AD: 0 0 1 0"></Part>
+        <EntryPoint name="(none)" trained="yes"></EntryPoint>
+    </Assembly>
+</QCARConfig>

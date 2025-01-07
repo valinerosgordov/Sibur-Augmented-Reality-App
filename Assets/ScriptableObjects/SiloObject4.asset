@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f2ed630a3a15f844ad73993c47ffa6f, type: 3}
+  m_Name: SiloObject4
+  m_EditorClassIdentifier: 
+  objectsToSpawn:
+  - prefab: {fileID: 2723007999775993260, guid: b2a1c7e371786a64b848cae5f7939c72,
+      type: 3}
+    initialRotation: {x: 90, y: 270, z: 90}
+    scale: {x: 0.1, y: 0.1, z: 0.1}
+  - prefab: {fileID: 509883281185555362, guid: 22c95d976e8ad32418ea944d6137a7af, type: 3}
+    initialRotation: {x: 0, y: 0, z: 0}
+    scale: {x: 0.008, y: 0.008, z: 0.008}
+  - prefab: {fileID: 298021361810370705, guid: 94779b4fbdc3ac74186c8102651569a0, type: 3}
+    initialRotation: {x: 270, y: 150, z: 90}
+    scale: {x: 3.5, y: 3.5, z: 3.5}
+  centerObjectPrefab: {fileID: 6395545481669889511, guid: 54184f68ad42d1a4e841c452aca1983b,
+    type: 3}
+  centerObjectInitialRotation: {x: 0, y: 180, z: 30}
+  spawnAmount: 3
+  spawnRadius: 2
+  rotationSpeed: 30
+  flyDuration: 2
+  spawnDelay: 0.5
+  objectClickSound: {fileID: 8300000, guid: 9d0113dd16699ce4ea3c58dd422fdc1f, type: 3}

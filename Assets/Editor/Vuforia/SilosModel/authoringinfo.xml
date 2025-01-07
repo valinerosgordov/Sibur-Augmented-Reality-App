@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<QCARInfo>
+    <TargetSet version="36.0" toolVersion="v7.0.8">
+        <ModelTarget name="silos_3_mesh_" targetId="8641db9d265c493eb6b415bcaf890ea7" version="14.0" toolVersion="v7.0.8" bbox="-0.966072 -0.052956 -7.606338 10.500687 17.082380 5.623580" trackingMode="car" upVector="0.0 1.0 0.0" optimizeTrackingFor="low_feature_objects" realisticTextures="no" />
+    </TargetSet>
+    <Assembly name="silos_3_mesh_" assemblyId="7ed541b5f4a0473f89d40441722c95c9">
+        <Part name="silos_3_mesh_" translation="0 0 0" rotation="AD: 0 0 1 0" />
+        <EntryPoint name="(none)" trained="yes" />
+    </Assembly>
+</QCARInfo>
