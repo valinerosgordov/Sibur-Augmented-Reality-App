@@ -16,7 +16,7 @@ MonoBehaviour:
   - prefab: {fileID: 2723007999775993260, guid: b2a1c7e371786a64b848cae5f7939c72,
       type: 3}
     initialRotation: {x: 90, y: 270, z: 90}
-    scale: {x: 0.1, y: 0.1, z: 0.1}
+    scale: {x: 0.09, y: 0.09, z: 0.09}
   - prefab: {fileID: 509883281185555362, guid: 22c95d976e8ad32418ea944d6137a7af, type: 3}
     initialRotation: {x: 0, y: 0, z: 0}
     scale: {x: 0.008, y: 0.008, z: 0.008}
@@ -27,7 +27,7 @@ MonoBehaviour:
     type: 3}
   centerObjectInitialRotation: {x: 0, y: 180, z: 30}
   spawnAmount: 3
-  spawnRadius: 2
+  spawnRadius: 3
   rotationSpeed: 30
   flyDuration: 2
   spawnDelay: 0.5

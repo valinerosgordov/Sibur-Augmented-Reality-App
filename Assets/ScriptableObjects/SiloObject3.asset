@@ -15,23 +15,23 @@ MonoBehaviour:
   objectsToSpawn:
   - prefab: {fileID: 713513621324801857, guid: 1ebbe0aa9c44c124984abcc006f8936b, type: 3}
     initialRotation: {x: 180, y: 90, z: 180}
-    scale: {x: 0.01, y: 0.01, z: 0.01}
+    scale: {x: 0.007, y: 0.007, z: 0.007}
   - prefab: {fileID: 7676594280463337048, guid: 3996ae89811b3e143a45d0ed6c4c2da9,
       type: 3}
     initialRotation: {x: 270, y: 90, z: 0}
     scale: {x: 5, y: 5, z: 5}
   - prefab: {fileID: 2397315922913032444, guid: c80946e181a54134e9d95597e5dd78ac,
       type: 3}
-    initialRotation: {x: 180, y: 45, z: 0}
+    initialRotation: {x: 180, y: 70, z: 0}
     scale: {x: 1, y: 1, z: 1}
   - prefab: {fileID: 2711705569176747914, guid: 611b9e1053944ad4fa68bb5e164fabe6,
       type: 3}
     initialRotation: {x: 180, y: 45, z: 0}
-    scale: {x: 0.2, y: 0.2, z: 1.8}
+    scale: {x: 0.35, y: 0.35, z: 1.8}
   - prefab: {fileID: 1724617479807696393, guid: 323c7c60dd676b5448ed619fc974b87f,
       type: 3}
     initialRotation: {x: 0, y: 90, z: 0}
-    scale: {x: 0.3, y: 0.3, z: 0.3}
+    scale: {x: 0.25, y: 0.25, z: 0.25}
   centerObjectPrefab: {fileID: 1550644300837121896, guid: fd0deba7679a88e409070045012084e7,
     type: 3}
   centerObjectInitialRotation: {x: 0, y: 180, z: 30}
