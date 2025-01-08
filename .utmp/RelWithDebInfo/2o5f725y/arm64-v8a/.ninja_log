@@ -1,0 +1,12 @@
+# ninja log v5
+159	438	7580072792820358	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	e93ed023da4c1369
+440	1127	7580072799672844	C:/UnityProjects/Sibur-Augmented-Reality-App/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/2o5f725y/obj/arm64-v8a/libswappywrapper.so	4b82f4254272466b
+48	1747	7580072805875743	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	6e5d73171b171c98
+64	1823	7580072806741515	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	11f78558d3d375ed
+16	1881	7580072807279950	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	15dda74f32325761
+1	1937	7580072807878269	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	8ede45c169b0a881
+136	1955	7580072808025811	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	fb531168adeece8b
+106	2065	7580072809076729	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	c0411684fa7bbe3b
+83	2260	7580072811164561	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	c062faab5a110e75
+32	2357	7580072812105382	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	3d1fabf658bca560
+2357	2680	7580072815315837	C:/UnityProjects/Sibur-Augmented-Reality-App/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/2o5f725y/obj/arm64-v8a/libgame.so	3c8872f638d029d8
