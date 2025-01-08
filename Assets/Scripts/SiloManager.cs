@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class SiloManager : MonoBehaviour
 {
@@ -103,26 +104,36 @@ public class SiloManager : MonoBehaviour
     {
         if (transitionPrefab != null && transitionPrefabSpawnPoint != null)
         {
-            GameObject instantiatedPrefab = Instantiate(transitionPrefab, transitionPrefabSpawnPoint.position, Quaternion.identity);
-            Animator animator = instantiatedPrefab.GetComponent<Animator>();
-
-            if (animator != null)
-            {
-                Debug.Log("Triggering animation for transition prefab.");
-                animator.SetTrigger("PlayAnimation");
-
-                // Wait for animation to complete before showing the "Next" button
-                StartCoroutine(WaitForTransitionAnimationToFinish(animator, instantiatedPrefab));
-            }
-            else
-            {
-                Debug.LogWarning("Animator not found on the transition prefab.");
-                ShowNextStepButton(); // If no animator, show the "Next" button immediately
-            }
+            // Add a 2-second delay before instantiating the transition prefab
+            StartCoroutine(DelayedSpawnTransitionPrefab());
         }
     }
 
-    private System.Collections.IEnumerator WaitForTransitionAnimationToFinish(Animator animator, GameObject prefab)
+    private IEnumerator DelayedSpawnTransitionPrefab()
+    {
+        // Wait for 2 seconds
+        yield return new WaitForSeconds(2f);
+
+        // Instantiate the transition prefab
+        GameObject instantiatedPrefab = Instantiate(transitionPrefab, transitionPrefabSpawnPoint.position, Quaternion.identity);
+        Animator animator = instantiatedPrefab.GetComponent<Animator>();
+
+        if (animator != null)
+        {
+            Debug.Log("Triggering animation for transition prefab.");
+            animator.SetTrigger("PlayAnimation");
+
+            // Wait for animation to complete before showing the "Next" button
+            StartCoroutine(WaitForTransitionAnimationToFinish(animator, instantiatedPrefab));
+        }
+        else
+        {
+            Debug.LogWarning("Animator not found on the transition prefab.");
+            ShowNextStepButton(); // If no animator, show the "Next" button immediately
+        }
+    }
+
+    private IEnumerator WaitForTransitionAnimationToFinish(Animator animator, GameObject prefab)
     {
         // Wait for the animation to finish
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
@@ -187,7 +198,7 @@ public class SiloManager : MonoBehaviour
         Debug.Log("Exit and Restart buttons are now visible.");
     }
 
-    private System.Collections.IEnumerator WaitForFinalPrefabAnimationToFinish(Animator animator, GameObject prefab)
+    private IEnumerator WaitForFinalPrefabAnimationToFinish(Animator animator, GameObject prefab)
     {
         // Wait for the animation to finish
         AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
