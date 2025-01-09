@@ -35,18 +35,29 @@ public class SiloClickHandler : MonoBehaviour
             int siloIndex = GetSiloIndexFromHit(hitTransform);
             if (siloIndex != -1)
             {
-                Debug.Log($"Silo clicked: Index {siloIndex}");
-                siloManager.HandleSiloClick(siloIndex);
+                HandleSiloClick(siloIndex);
                 return;
             }
 
             int tableIndex = GetTableIndexFromHit(hitTransform);
             if (tableIndex != -1)
             {
-                Debug.Log($"Table clicked: Index {tableIndex}");
-                tableManager.HandleTableClick(tableIndex);
+                HandleTableClick(tableIndex);
             }
         }
+    }
+
+    private void HandleSiloClick(int siloIndex)
+    {
+        // Check if interactions are locked or the silo is already active
+        if (SiloManager.IsInteractionLocked)
+        {
+            Debug.Log("Interaction is locked. Cannot click on another silo.");
+            return;
+        }
+
+        // Handle the silo click through the SiloManager
+        siloManager.HandleSiloClick(siloIndex);
     }
 
     private int GetSiloIndexFromHit(Transform hitTransform)
@@ -73,27 +84,38 @@ public class SiloClickHandler : MonoBehaviour
         return -1; // Not a table
     }
 
-    public void HandleTableClick(int siloIndex)
+    public void HandleTableClick(int tableIndex)
     {
-        if (siloIndex < 0 || siloIndex >= siloObjects.Count)
+        // Allow clicking only on the table of the active silo
+        if (SiloManager.IsInteractionLocked && SiloManager.ActiveSiloIndex != tableIndex)
         {
-            Debug.LogWarning($"Invalid silo index: {siloIndex}");
+            Debug.Log("Interaction is locked. Cannot click on tables of other silos.");
             return;
         }
 
-        // Calculate spawn position in front of the camera
-        Vector3 cameraPosition = Camera.main.transform.position;
-        Vector3 cameraForward = Camera.main.transform.forward;
-        Vector3 spawnPosition = cameraPosition + cameraForward.normalized * spawnDistance;
+        if (tableIndex >= 0 && tableIndex < siloObjects.Count)
+        {
+            // Play the table disappearance animation
+            tableManager.HideTable(tableIndex);
 
-        // Get the silo front part position
-        Vector3 siloFrontPartPosition = siloManager.frontParts[siloIndex].transform.position;
+            // Calculate spawn position in front of the camera
+            Vector3 cameraPosition = Camera.main.transform.position;
+            Vector3 cameraForward = Camera.main.transform.forward;
+            Vector3 spawnPosition = cameraPosition + cameraForward.normalized * spawnDistance;
 
-        Debug.Log($"Spawning objects for silo index: {siloIndex} at position {spawnPosition}, flying from {siloFrontPartPosition}");
+            // Get the silo front part position
+            Vector3 siloFrontPartPosition = siloManager.frontParts[tableIndex].transform.position;
 
-        // Spawn objects using the selected SiloObject
-        activeSiloObject = siloObjects[siloIndex];
-        activeSiloObject.SpawnObjects(spawnPosition, siloFrontPartPosition);
+            Debug.Log($"Spawning objects for silo index: {tableIndex} at position {spawnPosition}, flying from {siloFrontPartPosition}");
+
+            // Spawn objects using the selected SiloObject
+            activeSiloObject = siloObjects[tableIndex];
+            activeSiloObject.SpawnObjects(spawnPosition, siloFrontPartPosition);
+        }
+        else
+        {
+            Debug.LogWarning($"Invalid table index: {tableIndex}");
+        }
     }
 
     private void FixedUpdate()

@@ -12,6 +12,8 @@ public class SiloManager : MonoBehaviour
     public Transform transitionPrefabSpawnPoint; // Spawn point for the transition prefab
     public GameObject FinalPrefab; // Final prefab to instantiate after the transition prefab
     public Transform FinalPrefabSpawnPoint; // Spawn point for the final prefab
+    public GameObject extraFinalPrefab; // Additional prefab to spawn after the final prefab
+    public Transform extraFinalPrefabSpawnPoint; // Spawn point for the additional prefab
 
     public Button nextStepButton; // Button to appear after the transition prefab
     public Button exitButton; // Exit button to appear after final prefab animation
@@ -31,14 +33,9 @@ public class SiloManager : MonoBehaviour
     private void Start()
     {
         // Ensure all buttons are hidden initially
-        if (nextStepButton != null)
-            nextStepButton.gameObject.SetActive(false);
-
-        if (exitButton != null)
-            exitButton.gameObject.SetActive(false);
-
-        if (restartButton != null)
-            restartButton.gameObject.SetActive(false);
+        nextStepButton?.gameObject.SetActive(false);
+        exitButton?.gameObject.SetActive(false);
+        restartButton?.gameObject.SetActive(false);
 
         // Initialize silo completion tracking
         isSiloCompleted = new bool[frontParts.Length];
@@ -47,6 +44,7 @@ public class SiloManager : MonoBehaviour
 
     public void HandleSiloClick(int siloIndex)
     {
+        // Prevent interactions if locked or invalid index
         if (isInteractionLocked || siloIndex < 0 || siloIndex >= frontParts.Length) return;
 
         if (isSiloCompleted[siloIndex])
@@ -55,6 +53,7 @@ public class SiloManager : MonoBehaviour
             return;
         }
 
+        // Lock interaction and set active silo index
         isInteractionLocked = true;
         activeSiloIndex = siloIndex;
 
@@ -104,17 +103,14 @@ public class SiloManager : MonoBehaviour
     {
         if (transitionPrefab != null && transitionPrefabSpawnPoint != null)
         {
-            // Add a 2-second delay before instantiating the transition prefab
             StartCoroutine(DelayedSpawnTransitionPrefab());
         }
     }
 
     private IEnumerator DelayedSpawnTransitionPrefab()
     {
-        // Wait for 2 seconds
         yield return new WaitForSeconds(2f);
 
-        // Instantiate the transition prefab
         GameObject instantiatedPrefab = Instantiate(transitionPrefab, transitionPrefabSpawnPoint.position, Quaternion.identity);
         Animator animator = instantiatedPrefab.GetComponent<Animator>();
 
@@ -123,94 +119,24 @@ public class SiloManager : MonoBehaviour
             Debug.Log("Triggering animation for transition prefab.");
             animator.SetTrigger("PlayAnimation");
 
-            // Wait for animation to complete before showing the "Next" button
             StartCoroutine(WaitForTransitionAnimationToFinish(animator, instantiatedPrefab));
         }
         else
         {
             Debug.LogWarning("Animator not found on the transition prefab.");
-            ShowNextStepButton(); // If no animator, show the "Next" button immediately
+            ShowNextStepButton();
         }
     }
 
     private IEnumerator WaitForTransitionAnimationToFinish(Animator animator, GameObject prefab)
     {
-        // Wait for the animation to finish
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        while (stateInfo.normalizedTime < 1.0f)
+        while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
         {
-            stateInfo = animator.GetCurrentAnimatorStateInfo(0);
             yield return null;
         }
 
-        // Destroy the prefab after animation
-        Debug.Log("Transition prefab animation complete. Destroying prefab.");
         Destroy(prefab);
-
         ShowNextStepButton();
-    }
-
-    private void ShowNextStepButton()
-    {
-        if (nextStepButton != null)
-        {
-            nextStepButton.gameObject.SetActive(true);
-            nextStepButton.onClick.AddListener(HandleNextStepButtonClick);
-        }
-    }
-
-    private void HandleNextStepButtonClick()
-    {
-        // Hide the next step button
-        if (nextStepButton != null)
-        {
-            nextStepButton.gameObject.SetActive(false);
-            nextStepButton.onClick.RemoveListener(HandleNextStepButtonClick);
-        }
-
-        // Instantiate the final prefab
-        if (FinalPrefab != null && FinalPrefabSpawnPoint != null)
-        {
-            GameObject instantiatedPrefab = Instantiate(FinalPrefab, FinalPrefabSpawnPoint.position, Quaternion.identity);
-            Animator animator = instantiatedPrefab.GetComponent<Animator>();
-
-            if (animator != null)
-            {
-                Debug.Log("Triggering animation for final prefab.");
-                animator.SetTrigger("PlayAnimation");
-
-                // Wait for animation to complete without affecting buttons
-                StartCoroutine(WaitForFinalPrefabAnimationToFinish(animator, instantiatedPrefab));
-            }
-            else
-            {
-                Debug.LogWarning("Animator not found on the final prefab.");
-            }
-        }
-
-        // Show the exit and restart buttons immediately
-        if (exitButton != null)
-            exitButton.gameObject.SetActive(true);
-
-        if (restartButton != null)
-            restartButton.gameObject.SetActive(true);
-
-        Debug.Log("Exit and Restart buttons are now visible.");
-    }
-
-    private IEnumerator WaitForFinalPrefabAnimationToFinish(Animator animator, GameObject prefab)
-    {
-        // Wait for the animation to finish
-        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        while (stateInfo.normalizedTime < 1.0f)
-        {
-            stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            yield return null;
-        }
-
-        // Destroy the prefab
-        Debug.Log("Final prefab animation complete. Destroying prefab.");
-        Destroy(prefab);
     }
 
     public void NotifyObjectDestroyed()
@@ -220,8 +146,73 @@ public class SiloManager : MonoBehaviour
 
         if (totalDestroyedObjects >= frontParts.Length)
         {
+            Debug.Log("All objects destroyed. Spawning transition prefab...");
             SpawnTransitionPrefab(); // Trigger transition after all objects are destroyed
         }
+    }
+
+    private void ShowNextStepButton()
+    {
+        nextStepButton?.gameObject.SetActive(true);
+        nextStepButton?.onClick.AddListener(HandleNextStepButtonClick);
+    }
+
+    private void HandleNextStepButtonClick()
+    {
+        nextStepButton?.gameObject.SetActive(false);
+        nextStepButton?.onClick.RemoveListener(HandleNextStepButtonClick);
+
+        StartCoroutine(HandleFinalStage());
+    }
+
+    private IEnumerator HandleFinalStage()
+    {
+        // Spawn the final prefab
+        if (FinalPrefab != null && FinalPrefabSpawnPoint != null)
+        {
+            GameObject finalPrefabInstance = Instantiate(FinalPrefab, FinalPrefabSpawnPoint.position, Quaternion.identity);
+            Animator finalAnimator = finalPrefabInstance.GetComponent<Animator>();
+
+            if (finalAnimator != null)
+            {
+                Debug.Log("Triggering animation for FinalPrefab.");
+                finalAnimator.SetTrigger("PlayAnimation");
+                while (finalAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+                {
+                    yield return null;
+                }
+                Destroy(finalPrefabInstance);
+            }
+        }
+
+        // Spawn the extra final prefab
+        if (extraFinalPrefab != null && extraFinalPrefabSpawnPoint != null)
+        {
+            GameObject extraPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, Quaternion.identity);
+            Animator extraAnimator = extraPrefabInstance.GetComponent<Animator>();
+
+            if (extraAnimator != null)
+            {
+                Debug.Log("Triggering animation for extraFinalPrefab.");
+                extraAnimator.SetTrigger("PlayAnimation");
+                while (extraAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+                {
+                    yield return null;
+                }
+                Destroy(extraPrefabInstance);
+            }
+        }
+
+        // Show exit and restart buttons
+        exitButton?.gameObject.SetActive(true);
+        restartButton?.gameObject.SetActive(true);
+        Debug.Log("Exit and Restart buttons are now visible.");
+    }
+
+    public static void UnlockInteraction()
+    {
+        isInteractionLocked = false;
+        activeSiloIndex = -1;
     }
 
     private void PlaySound(AudioClip[] sounds, int index)
@@ -235,11 +226,5 @@ public class SiloManager : MonoBehaviour
         {
             Debug.LogWarning($"No valid sound for index {index} or audio source is missing.");
         }
-    }
-
-    public static void UnlockInteraction()
-    {
-        isInteractionLocked = false;
-        activeSiloIndex = -1;
     }
 }

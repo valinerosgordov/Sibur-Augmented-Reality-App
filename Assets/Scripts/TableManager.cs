@@ -40,6 +40,30 @@ public class TableManager : MonoBehaviour
         }
     }
 
+    public void HideTable(int tableIndex)
+    {
+        if (tableIndex >= 0 && tableIndex < tables.Length)
+        {
+            Animator animator = tables[tableIndex].GetComponent<Animator>();
+
+            if (animator != null)
+            {
+                animator.SetTrigger("PlayDespawn"); // Trigger the disappearance animation
+                StartCoroutine(DeactivateTableAfterAnimation(tables[tableIndex]));
+            }
+            else
+            {
+                tables[tableIndex].SetActive(false); // Disable the table immediately if no animator is present
+            }
+
+            Debug.Log($"Table {tableIndex} is hidden.");
+        }
+        else
+        {
+            Debug.LogWarning($"Invalid table index: {tableIndex}");
+        }
+    }
+
     private IEnumerator PlayDespawnAnimation(int tableIndex)
     {
         Animator animator = tables[tableIndex].GetComponent<Animator>();
@@ -58,6 +82,19 @@ public class TableManager : MonoBehaviour
 
         // Notify SiloClickHandler to handle spawning objects
         siloClickHandler.HandleTableClick(tableIndex);
+    }
+
+    private IEnumerator DeactivateTableAfterAnimation(GameObject table)
+    {
+        Animator animator = table.GetComponent<Animator>();
+        if (animator != null)
+        {
+            // Wait for the animation to complete
+            float animationLength = animator.GetCurrentAnimatorStateInfo(0).length;
+            yield return new WaitForSeconds(animationLength);
+        }
+
+        table.SetActive(false); // Deactivate the table after animation
     }
 
     public void ShowTable(int tableIndex)
