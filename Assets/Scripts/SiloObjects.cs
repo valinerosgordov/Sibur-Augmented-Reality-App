@@ -27,6 +27,9 @@ public class SiloObjects : ScriptableObject
     private List<GameObject> spawnedObjects = new List<GameObject>();
     private GameObject centerObject;
 
+    private bool isRotationEnabled = false; // Flag to control rotation
+    private int objectsInFlight = 0; // Counter for objects in flight
+
     public void SpawnObjects(Vector3 spawnPosition, Vector3 siloFrontPartPosition, Transform parent = null)
     {
         // Clear previously spawned objects
@@ -37,6 +40,10 @@ public class SiloObjects : ScriptableObject
             Debug.LogWarning("No objects to spawn or spawn amount is zero.");
             return;
         }
+
+        // Reset the rotation flag and counter
+        isRotationEnabled = false;
+        objectsInFlight = spawnAmount;
 
         // Spawn the center object directly at the spawn position
         if (centerObjectPrefab != null)
@@ -113,11 +120,34 @@ public class SiloObjects : ScriptableObject
         return new Vector3(Mathf.Cos(angle) * radius, Mathf.Sin(angle) * radius, 0);
     }
 
+    private IEnumerator FlyToPosition(GameObject obj, Vector3 targetPosition)
+    {
+        Vector3 startPosition = obj.transform.position;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < flyDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / flyDuration;
+
+            obj.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        obj.transform.position = targetPosition;
+
+        // Decrease the counter and enable rotation when all objects are in position
+        objectsInFlight--;
+        if (objectsInFlight <= 0)
+        {
+            isRotationEnabled = true;
+        }
+    }
+
     public void RotateObjects()
     {
-        if (centerObject == null)
+        if (!isRotationEnabled || centerObject == null)
         {
-            Debug.LogWarning("Center object is null. Cannot rotate objects.");
             return;
         }
 
@@ -160,23 +190,6 @@ public class SiloObjects : ScriptableObject
         }
 
         SiloManager.UnlockInteraction();
-    }
-
-    private IEnumerator FlyToPosition(GameObject obj, Vector3 targetPosition)
-    {
-        Vector3 startPosition = obj.transform.position;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < flyDuration)
-        {
-            elapsedTime += Time.deltaTime;
-            float t = elapsedTime / flyDuration;
-
-            obj.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
-            yield return null;
-        }
-
-        obj.transform.position = targetPosition;
     }
 
     private IEnumerator ShrinkObject(GameObject obj)
