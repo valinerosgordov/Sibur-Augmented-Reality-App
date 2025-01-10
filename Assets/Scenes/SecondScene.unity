@@ -121,74 +121,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &35364058
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4259678756917460177, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_Name
-      value: LeikaPrefab
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -0.45530617
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -2.462
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0.68719494
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d62302d0f9044224d98363d203905dd5, type: 3}
 --- !u!1 &505452580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1832,10 +1764,14 @@ MonoBehaviour:
     type: 3}
   transitionPrefabSpawnPoint: {fileID: 3458408195235482654, guid: a003fd299ac721b479085c9c709e7766,
     type: 3}
-  FinalPrefab: {fileID: 0}
-  FinalPrefabSpawnPoint: {fileID: 0}
-  extraFinalPrefab: {fileID: 0}
-  extraFinalPrefabSpawnPoint: {fileID: 0}
+  FinalPrefab: {fileID: 4259678756917460177, guid: d62302d0f9044224d98363d203905dd5,
+    type: 3}
+  FinalPrefabSpawnPoint: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
+    type: 3}
+  extraFinalPrefab: {fileID: 4437403465816209802, guid: 9a4737afbba8594418c66706ec58f4aa,
+    type: 3}
+  extraFinalPrefabSpawnPoint: {fileID: 3953881598520173360, guid: 9a4737afbba8594418c66706ec58f4aa,
+    type: 3}
   nextStepButton: {fileID: 2237155364851476534}
   exitButton: {fileID: 9126881319925813287}
   restartButton: {fileID: 4966380602956172929}
@@ -4249,4 +4185,3 @@ SceneRoots:
   - {fileID: 3209116489657512977}
   - {fileID: 5593613487725413693}
   - {fileID: 1220316148713212334}
-  - {fileID: 35364058}
