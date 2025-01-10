@@ -104,7 +104,7 @@ public class SiloManager : MonoBehaviour
 
     private IEnumerator DelayedSpawnTransitionPrefab()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(2f); // Wait for 2 seconds before spawning
 
         GameObject instantiatedPrefab = Instantiate(transitionPrefab, transitionPrefabSpawnPoint.position, Quaternion.identity);
         Animator animator = instantiatedPrefab.GetComponent<Animator>();
@@ -116,6 +116,10 @@ public class SiloManager : MonoBehaviour
         }
 
         AddClickHandlerToTransitionPrefab(instantiatedPrefab);
+
+        // Wait for 8 seconds before showing the "Next Step" button
+        yield return new WaitForSeconds(8f);
+        ShowNextStepButton();
     }
 
     private void AddClickHandlerToTransitionPrefab(GameObject prefab)
