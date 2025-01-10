@@ -113,25 +113,20 @@ public class SiloManager : MonoBehaviour
         {
             Debug.Log("Triggering animation for transition prefab.");
             animator.SetTrigger("PlayAnimation");
+        }
 
-            StartCoroutine(WaitForTransitionAnimationToFinish(animator, instantiatedPrefab));
-        }
-        else
-        {
-            Debug.LogWarning("Animator not found on the transition prefab.");
-            ShowNextStepButton();
-        }
+        AddClickHandlerToTransitionPrefab(instantiatedPrefab);
     }
 
-    private IEnumerator WaitForTransitionAnimationToFinish(Animator animator, GameObject prefab)
+    private void AddClickHandlerToTransitionPrefab(GameObject prefab)
     {
-        while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+        if (!prefab.TryGetComponent(out Collider collider))
         {
-            yield return null;
+            // Add a collider to detect clicks
+            collider = prefab.AddComponent<BoxCollider>();
         }
 
-        Destroy(prefab);
-        ShowNextStepButton();
+        prefab.AddComponent<TransitionPrefabClickHandler>();
     }
 
     public void NotifyObjectDestroyed()
@@ -146,10 +141,13 @@ public class SiloManager : MonoBehaviour
         }
     }
 
-    private void ShowNextStepButton()
+    public void ShowNextStepButton()
     {
-        nextStepButton?.gameObject.SetActive(true);
-        nextStepButton?.onClick.AddListener(HandleNextStepButtonClick);
+        if (nextStepButton != null)
+        {
+            nextStepButton.gameObject.SetActive(true);
+            nextStepButton.onClick.AddListener(HandleNextStepButtonClick);
+        }
     }
 
     private void HandleNextStepButtonClick()
