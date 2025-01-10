@@ -180,6 +180,9 @@ public class SiloManager : MonoBehaviour
             }
         }
 
+        // Wait for 2 seconds before spawning the extra final prefab
+        yield return new WaitForSeconds(2f);
+
         // Spawn the extra final prefab
         if (extraFinalPrefab != null && extraFinalPrefabSpawnPoint != null)
         {
@@ -215,6 +218,7 @@ public class SiloManager : MonoBehaviour
         restartButton?.gameObject.SetActive(true);
         Debug.Log("Exit and Restart buttons are now visible.");
     }
+
 
     public static void UnlockInteraction()
     {
