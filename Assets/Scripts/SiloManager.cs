@@ -26,25 +26,21 @@ public class SiloManager : MonoBehaviour
     private bool[] isSiloCompleted; // Tracks completion status of each silo
     private AudioSource audioSource; // Audio source for playing sounds
 
-    // Expose the interaction lock and active silo index
     public static bool IsInteractionLocked => isInteractionLocked;
     public static int ActiveSiloIndex => activeSiloIndex;
 
     private void Start()
     {
-        // Ensure all buttons are hidden initially
         nextStepButton?.gameObject.SetActive(false);
         exitButton?.gameObject.SetActive(false);
         restartButton?.gameObject.SetActive(false);
 
-        // Initialize silo completion tracking
         isSiloCompleted = new bool[frontParts.Length];
         audioSource = GetComponent<AudioSource>() ?? gameObject.AddComponent<AudioSource>();
     }
 
     public void HandleSiloClick(int siloIndex)
     {
-        // Prevent interactions if locked or invalid index
         if (isInteractionLocked || siloIndex < 0 || siloIndex >= frontParts.Length) return;
 
         if (isSiloCompleted[siloIndex])
@@ -53,7 +49,6 @@ public class SiloManager : MonoBehaviour
             return;
         }
 
-        // Lock interaction and set active silo index
         isInteractionLocked = true;
         activeSiloIndex = siloIndex;
 
@@ -92,7 +87,7 @@ public class SiloManager : MonoBehaviour
 
             if (silosClicked >= frontParts.Length)
             {
-                SpawnTransitionPrefab(); // Spawn transition prefab after all silos are clicked
+                SpawnTransitionPrefab();
             }
         }
 
@@ -147,7 +142,7 @@ public class SiloManager : MonoBehaviour
         if (totalDestroyedObjects >= frontParts.Length)
         {
             Debug.Log("All objects destroyed. Spawning transition prefab...");
-            SpawnTransitionPrefab(); // Trigger transition after all objects are destroyed
+            SpawnTransitionPrefab();
         }
     }
 
@@ -167,40 +162,50 @@ public class SiloManager : MonoBehaviour
 
     private IEnumerator HandleFinalStage()
     {
+        GameObject finalPrefabInstance = null;
+        GameObject extraPrefabInstance = null;
+
         // Spawn the final prefab
         if (FinalPrefab != null && FinalPrefabSpawnPoint != null)
         {
-            GameObject finalPrefabInstance = Instantiate(FinalPrefab, FinalPrefabSpawnPoint.position, Quaternion.identity);
+            finalPrefabInstance = Instantiate(FinalPrefab, FinalPrefabSpawnPoint.position, Quaternion.identity);
             Animator finalAnimator = finalPrefabInstance.GetComponent<Animator>();
 
             if (finalAnimator != null)
             {
                 Debug.Log("Triggering animation for FinalPrefab.");
                 finalAnimator.SetTrigger("PlayAnimation");
-                while (finalAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
-                {
-                    yield return null;
-                }
-                Destroy(finalPrefabInstance);
             }
         }
 
         // Spawn the extra final prefab
         if (extraFinalPrefab != null && extraFinalPrefabSpawnPoint != null)
         {
-            GameObject extraPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, Quaternion.identity);
+            extraPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, Quaternion.identity);
             Animator extraAnimator = extraPrefabInstance.GetComponent<Animator>();
 
             if (extraAnimator != null)
             {
                 Debug.Log("Triggering animation for extraFinalPrefab.");
                 extraAnimator.SetTrigger("PlayAnimation");
-                while (extraAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
+            }
+        }
+
+        // Handle FinalPrefab animation and destruction
+        if (finalPrefabInstance != null)
+        {
+            Animator finalAnimator = finalPrefabInstance.GetComponent<Animator>();
+            if (finalAnimator != null)
+            {
+                while (finalAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
                 {
                     yield return null;
                 }
-                Destroy(extraPrefabInstance);
             }
+
+            yield return new WaitForSeconds(3f); // Wait an additional 3 seconds
+            Destroy(finalPrefabInstance);
+            Debug.Log("FinalPrefab destroyed after 3 seconds.");
         }
 
         // Show exit and restart buttons
