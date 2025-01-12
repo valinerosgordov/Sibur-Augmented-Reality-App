@@ -6,7 +6,7 @@ public class SiloClickHandler : MonoBehaviour
     public SiloManager siloManager;   // Reference to the SiloManager script
     public TableManager tableManager; // Reference to the TableManager script
     public List<SiloObjects> siloObjects; // List of SiloObjects (ScriptableObjects)
-    public float spawnDistance = 10f;
+    public float spawnDistance = 10f; // Adjustable distance for spawning objects in front of the camera
 
     private SiloObjects activeSiloObject; // Currently active SiloObject
 
@@ -22,11 +22,19 @@ public class SiloClickHandler : MonoBehaviour
                 HandleTouch(touch.position);
             }
         }
+
+        // Add support for mouse input in Editor
+#if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0))
+        {
+            HandleTouch(Input.mousePosition);
+        }
+#endif
     }
 
     private void HandleTouch(Vector2 screenPosition)
     {
-        // Perform a raycast from the touch position
+        // Perform a raycast from the touch or mouse position
         Transform hitTransform = RaycastHelper.GetHitTransform(screenPosition, ~0);
 
         if (hitTransform != null)
@@ -98,25 +106,21 @@ public class SiloClickHandler : MonoBehaviour
             // Play the table disappearance animation
             tableManager.HideTable(tableIndex);
 
-            // Calculate spawn position in front of the camera
-            Vector3 cameraPosition = Camera.main.transform.position;
-            Vector3 cameraForward = Camera.main.transform.forward;
-            Vector3 spawnPosition = cameraPosition + cameraForward.normalized * spawnDistance;
-
             // Get the silo front part position
             Vector3 siloFrontPartPosition = siloManager.frontParts[tableIndex].transform.position;
 
-            Debug.Log($"Spawning objects for silo index: {tableIndex} at position {spawnPosition}, flying from {siloFrontPartPosition}");
+            Debug.Log($"Spawning objects for silo index: {tableIndex} at distance {spawnDistance}, flying from {siloFrontPartPosition}");
 
             // Spawn objects using the selected SiloObject
             activeSiloObject = siloObjects[tableIndex];
-            activeSiloObject.SpawnObjects(spawnPosition, siloFrontPartPosition);
+            activeSiloObject.SpawnObjects(spawnDistance, siloFrontPartPosition); // Correctly passing a float as the first parameter
         }
         else
         {
             Debug.LogWarning($"Invalid table index: {tableIndex}");
         }
     }
+
 
     private void FixedUpdate()
     {

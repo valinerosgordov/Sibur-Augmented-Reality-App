@@ -27,7 +27,7 @@ MonoBehaviour:
     type: 3}
   centerObjectInitialRotation: {x: 0, y: 180, z: 30}
   spawnAmount: 3
-  spawnRadius: 3
+  defaultSpawnDistance: 3
   rotationSpeed: 30
   flyDuration: 2
   spawnDelay: 0.5

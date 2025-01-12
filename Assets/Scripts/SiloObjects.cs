@@ -18,7 +18,7 @@ public class SiloObjects : ScriptableObject
     public GameObject centerObjectPrefab;         // Center object prefab (optional)
     public Vector3 centerObjectInitialRotation = Vector3.zero;
     public int spawnAmount;
-    public float spawnRadius = 10f;
+    public float defaultSpawnDistance = 10f; // Default distance in front of the camera
     public float rotationSpeed = 30f;
     public float flyDuration = 2f; // Duration for objects to fly to their positions
     public float spawnDelay = 0.5f; // Delay between spawning objects
@@ -30,7 +30,7 @@ public class SiloObjects : ScriptableObject
     private bool isRotationEnabled = false; // Flag to control rotation
     private int objectsInFlight = 0; // Counter for objects in flight
 
-    public void SpawnObjects(Vector3 spawnPosition, Vector3 siloFrontPartPosition, Transform parent = null)
+    public void SpawnObjects(float spawnDistance, Vector3 siloFrontPartPosition, Transform parent = null)
     {
         // Clear previously spawned objects
         DestroyObjects();
@@ -45,12 +45,25 @@ public class SiloObjects : ScriptableObject
         isRotationEnabled = false;
         objectsInFlight = spawnAmount;
 
-        // Spawn the center object directly at the spawn position
+        // Calculate the spawn position directly in front of the camera with adjustable distance
+        Camera mainCamera = Camera.main;
+        Vector3 spawnPosition;
+        if (mainCamera != null)
+        {
+            spawnPosition = mainCamera.transform.position + mainCamera.transform.forward * spawnDistance;
+        }
+        else
+        {
+            Debug.LogWarning("Main Camera is null. Using default spawn distance.");
+            spawnPosition = Vector3.forward * spawnDistance; // Default fallback
+        }
+
+        // Spawn the center object directly at the calculated spawn position
         if (centerObjectPrefab != null)
         {
             centerObject = Instantiate(centerObjectPrefab, spawnPosition, Quaternion.identity, parent);
             centerObject.transform.localRotation = Quaternion.Euler(centerObjectInitialRotation);
-            Debug.Log("Center object spawned at: " + spawnPosition);
+            Debug.Log($"Center object spawned at distance: {spawnDistance}, position: {spawnPosition}");
         }
 
         // Start the coroutine to spawn objects one by one
@@ -63,7 +76,7 @@ public class SiloObjects : ScriptableObject
 
     private IEnumerator SpawnObjectsSequentially(Vector3 spawnPosition, Vector3 siloFrontPartPosition)
     {
-        float adjustedRadius = spawnRadius + (spawnAmount * 0.5f); // Adjust radius dynamically
+        float adjustedRadius = defaultSpawnDistance + (spawnAmount * 0.5f); // Adjust radius dynamically
         for (int i = 0; i < spawnAmount; i++)
         {
             SpawnableObject spawnable = objectsToSpawn[i % objectsToSpawn.Count];
