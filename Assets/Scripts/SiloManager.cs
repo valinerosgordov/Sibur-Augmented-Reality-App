@@ -11,9 +11,9 @@ public class SiloManager : MonoBehaviour
     public TransitionPrefab transitionPrefabConfig; // ScriptableObject for transition objects
 
     public GameObject finalPrefab; // Final prefab to spawn
-    public Transform finalPrefabSpawnPoint; // Spawn point for the final prefab
+    public float finalPrefabDistance = 5.0f; // Spawn point for the final prefab
     public GameObject extraFinalPrefab; // Additional prefab to spawn after the final prefab
-    public Transform extraFinalPrefabSpawnPoint; // Spawn point for the extra prefab
+    public float extraFinalPrefabDistance = 7.0f; // Spawn point for the extra prefab
 
     public Button nextStepButton; // Button for proceeding after transition
     public Button exitButton; // Exit button after final stage
@@ -217,42 +217,44 @@ public class SiloManager : MonoBehaviour
         GameObject finalPrefabInstance = null;
         GameObject extraFinalPrefabInstance = null;
 
-        // Spawn the final prefab
-        if (finalPrefab != null && finalPrefabSpawnPoint != null)
+        // Spawn the final prefab in front of the camera
+        if (finalPrefab != null)
         {
-            finalPrefabInstance = Instantiate(finalPrefab, finalPrefabSpawnPoint.position, finalPrefabSpawnPoint.rotation);
+            Vector3 spawnPosition = Camera.main.transform.position + Camera.main.transform.forward * finalPrefabDistance;
+            Quaternion spawnRotation = Quaternion.LookRotation(Camera.main.transform.forward, Vector3.up);
+
+            finalPrefabInstance = Instantiate(finalPrefab, spawnPosition, spawnRotation);
             finalPrefabInstance.transform.localScale = finalPrefab.transform.localScale;
 
-            // Move the final prefab
-            Vector3 targetPosition = finalPrefabSpawnPoint.position + Vector3.forward * cameraDistance;
+            Vector3 targetPosition = spawnPosition; // No additional movement
             yield return StartCoroutine(MoveObject(finalPrefabInstance, targetPosition, transitionSpeed));
         }
 
-        // Wait before spawning the extra final prefab
         yield return new WaitForSeconds(1f);
 
-        // Spawn the extra final prefab
-        if (extraFinalPrefab != null && extraFinalPrefabSpawnPoint != null)
+        // Spawn the extra final prefab in front of the camera
+        if (extraFinalPrefab != null)
         {
-            extraFinalPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, extraFinalPrefabSpawnPoint.rotation);
+            Vector3 extraSpawnPosition = Camera.main.transform.position + Camera.main.transform.forward * extraFinalPrefabDistance;
+            Quaternion extraSpawnRotation = Quaternion.LookRotation(Camera.main.transform.forward, Vector3.up);
+
+            extraFinalPrefabInstance = Instantiate(extraFinalPrefab, extraSpawnPosition, extraSpawnRotation);
             extraFinalPrefabInstance.transform.localScale = extraFinalPrefab.transform.localScale;
 
-            // Move the extra final prefab
-            Vector3 extraTargetPosition = extraFinalPrefabSpawnPoint.position + Vector3.forward * cameraDistance;
+            Vector3 extraTargetPosition = extraSpawnPosition; // No additional movement
             yield return StartCoroutine(MoveObject(extraFinalPrefabInstance, extraTargetPosition, transitionSpeed));
         }
 
-        // Wait before final cleanup
         yield return new WaitForSeconds(1f);
 
-        // Cleanup final prefabs
+        // Cleanup final prefab only
         if (finalPrefabInstance != null) Destroy(finalPrefabInstance);
-        if (extraFinalPrefabInstance != null) Destroy(extraFinalPrefabInstance);
 
         // Show exit and restart buttons
         exitButton?.gameObject.SetActive(true);
         restartButton?.gameObject.SetActive(true);
     }
+
 
     private IEnumerator MoveObject(GameObject obj, Vector3 targetPosition, float duration)
     {

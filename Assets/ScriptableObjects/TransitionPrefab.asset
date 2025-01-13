@@ -39,7 +39,7 @@ MonoBehaviour:
     customRotation: {x: 270, y: 180, z: 0}
   - prefab: {fileID: 4988622652657600505, guid: e9ebb46a61d61064ab6ca3edaecace5e,
       type: 3}
-    scale: {x: 2, y: 1, z: 0.01}
+    scale: {x: 3, y: 1.5, z: 0.01}
     animationDuration: 2
     customRotation: {x: 0, y: 180, z: 0}
   lastObjectIndex: 5
