@@ -29,8 +29,13 @@ public class ObjectClickHandler : MonoBehaviour
             {
                 siloManager.NotifyObjectDestroyed();
             }
+            else
+            {
+                Debug.LogWarning("SiloManager not found in the scene.");
+            }
         }
     }
+
 
     private void PlaySound()
     {

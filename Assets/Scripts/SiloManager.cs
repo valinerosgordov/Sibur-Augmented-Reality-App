@@ -8,23 +8,30 @@ public class SiloManager : MonoBehaviour
     public GameObject[] tables; // Silo tables
     public AudioClip[] frontPartClickSounds; // Sounds for silo front clicks
     public AudioClip[] tableClickSounds; // Sounds for table clicks
-    public GameObject transitionPrefab; // Prefab to spawn after all silos are clicked and objects disappear
-    public Transform transitionPrefabSpawnPoint; // Spawn point for the transition prefab
-    public GameObject FinalPrefab; // Final prefab to instantiate after the transition prefab
-    public Transform FinalPrefabSpawnPoint; // Spawn point for the final prefab
+    public TransitionPrefab transitionPrefabConfig; // ScriptableObject for transition objects
+
+    public GameObject finalPrefab; // Final prefab to spawn
+    public Transform finalPrefabSpawnPoint; // Spawn point for the final prefab
     public GameObject extraFinalPrefab; // Additional prefab to spawn after the final prefab
-    public Transform extraFinalPrefabSpawnPoint; // Spawn point for the additional prefab
+    public Transform extraFinalPrefabSpawnPoint; // Spawn point for the extra prefab
 
-    public Button nextStepButton; // Button to appear after the transition prefab
-    public Button exitButton; // Exit button to appear after final prefab animation
-    public Button restartButton; // Restart button to appear after final prefab animation
+    public Button nextStepButton; // Button for proceeding after transition
+    public Button exitButton; // Exit button after final stage
+    public Button restartButton; // Restart button after final stage
 
-    private static bool isInteractionLocked = false; // Lock to prevent multiple interactions at the same time
-    private static int activeSiloIndex = -1; // Currently active silo index
-    private int silosClicked = 0; // Number of silos clicked
+    [SerializeField] private float transitionSpeed = 0.5f; // Speed for prefab movement
+    [SerializeField] private float cameraDistance = 5.0f; // Distance from the camera for objects
+    [SerializeField] private float delayBetweenObjects = 0.5f; // Delay between object animations
+    [SerializeField] private float transitionPrefabDistance = 2.0f; // Distance from the camera for table alignment
+
+
+    private static bool isInteractionLocked = false; // Lock to prevent multiple interactions
+    private static int activeSiloIndex = -1; // Active silo index
+    private GameObject lastObjectInstance; // Reference to the last transition object
+    private int silosClicked = 0; // Count of completed silos
     private int totalDestroyedObjects = 0; // Tracks destroyed objects
-    private bool[] isSiloCompleted; // Tracks completion status of each silo
-    private AudioSource audioSource; // Audio source for playing sounds
+    private bool[] isSiloCompleted; // Tracks completion of silos
+    private AudioSource audioSource;
 
     public static bool IsInteractionLocked => isInteractionLocked;
     public static int ActiveSiloIndex => activeSiloIndex;
@@ -72,8 +79,18 @@ public class SiloManager : MonoBehaviour
         {
             PlaySound(tableClickSounds, index);
             tables[index].SetActive(true);
+            AlignTableWithCamera(tables[index]);
             Debug.Log($"Table shown: {index}");
         }
+    }
+
+    private void AlignTableWithCamera(GameObject table)
+    {
+        Vector3 cameraPosition = Camera.main.transform.position;
+        Vector3 forward = Camera.main.transform.forward.normalized;
+        table.transform.position = cameraPosition + forward * transitionPrefabDistance;
+        table.transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
+        Debug.Log("Table aligned with camera.");
     }
 
     public void MarkSiloAsCompleted(int siloIndex)
@@ -87,70 +104,96 @@ public class SiloManager : MonoBehaviour
 
             if (silosClicked >= frontParts.Length)
             {
-                SpawnTransitionPrefab();
+                StartCoroutine(SpawnAndAnimateObjects());
             }
         }
 
         UnlockInteraction();
     }
 
-    private void SpawnTransitionPrefab()
+    private IEnumerator SpawnAndAnimateObjects()
     {
-        if (transitionPrefab != null && transitionPrefabSpawnPoint != null)
+        for (int i = 0; i < transitionPrefabConfig.objectsToAnimate.Count; i++)
         {
-            StartCoroutine(DelayedSpawnTransitionPrefab());
+            var objConfig = transitionPrefabConfig.objectsToAnimate[i];
+
+            // Calculate dynamic positions based on the camera view
+            Camera mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                Debug.LogError("Main Camera not found!");
+                yield break;
+            }
+
+            Vector3 cameraPosition = mainCamera.transform.position;
+            Vector3 cameraRight = mainCamera.transform.right.normalized;
+            Vector3 cameraForward = mainCamera.transform.forward.normalized;
+
+            // Off-screen spawn position (to the left of the camera view)
+            Vector3 offScreenPosition = cameraPosition + cameraForward * cameraDistance - cameraRight * cameraDistance;
+
+            // On-screen target position (center of the camera view)
+            Vector3 targetPosition = cameraPosition + cameraForward * cameraDistance;
+
+            // Exit position (to the right of the camera view)
+            Vector3 exitPosition = cameraPosition + cameraForward * cameraDistance + cameraRight * cameraDistance;
+
+            // Instantiate the object
+            Quaternion spawnRotation = objConfig.customRotation != Vector3.zero
+                ? Quaternion.Euler(objConfig.customRotation)
+                : Quaternion.identity;
+
+            GameObject instance = Instantiate(objConfig.prefab, offScreenPosition, spawnRotation);
+            instance.transform.localScale = objConfig.scale;
+
+            // Animate the object from off-screen to on-screen
+            yield return StartCoroutine(AnimateObject(instance, targetPosition, objConfig.animationDuration));
+
+            // Handle the last object differently
+            if (i == transitionPrefabConfig.lastObjectIndex)
+            {
+                lastObjectInstance = instance;
+                Debug.Log("Last object remains on scene.");
+            }
+            else if (i == transitionPrefabConfig.lastObjectIndex - 1)
+            {
+                // Handle second-to-last object: ensure it has a valid exit path
+                Debug.Log("Second-to-last object exiting scene.");
+                yield return StartCoroutine(AnimateObject(instance, exitPosition, objConfig.animationDuration));
+                Destroy(instance);
+            }
+            else
+            {
+                // Handle regular objects
+                yield return StartCoroutine(AnimateObject(instance, exitPosition, objConfig.animationDuration));
+                Destroy(instance);
+            }
+
+            // Delay before spawning the next object
+            yield return new WaitForSeconds(delayBetweenObjects);
         }
+
+        // Show the "Next" button after all animations are completed
+        nextStepButton?.gameObject.SetActive(true);
+        nextStepButton?.onClick.AddListener(HandleNextStepButtonClick);
     }
 
-    private IEnumerator DelayedSpawnTransitionPrefab()
+
+
+    private IEnumerator AnimateObject(GameObject obj, Vector3 targetPosition, float duration)
     {
-        yield return new WaitForSeconds(2f); // Wait for 2 seconds before spawning
+        float elapsedTime = 0f;
+        Vector3 startPosition = obj.transform.position;
 
-        GameObject instantiatedPrefab = Instantiate(transitionPrefab, transitionPrefabSpawnPoint.position, Quaternion.identity);
-        Animator animator = instantiatedPrefab.GetComponent<Animator>();
-
-        if (animator != null)
+        while (elapsedTime < duration)
         {
-            Debug.Log("Triggering animation for transition prefab.");
-            animator.SetTrigger("PlayAnimation");
-        }
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
 
-        AddClickHandlerToTransitionPrefab(instantiatedPrefab);
+            // Move the object without altering its scale or rotation
+            obj.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
 
-        // Wait for 8 seconds before showing the "Next Step" button
-        yield return new WaitForSeconds(8f);
-        ShowNextStepButton();
-    }
-
-    private void AddClickHandlerToTransitionPrefab(GameObject prefab)
-    {
-        if (!prefab.TryGetComponent(out Collider collider))
-        {
-            // Add a collider to detect clicks
-            collider = prefab.AddComponent<BoxCollider>();
-        }
-
-        prefab.AddComponent<TransitionPrefabClickHandler>();
-    }
-
-    public void NotifyObjectDestroyed()
-    {
-        totalDestroyedObjects++;
-        Debug.Log($"Object destroyed. Total destroyed: {totalDestroyedObjects}");
-
-        if (totalDestroyedObjects >= frontParts.Length)
-        {
-            Debug.Log("All objects destroyed. Spawning transition prefab...");
-            SpawnTransitionPrefab();
-        }
-    }
-
-    public void ShowNextStepButton()
-    {
-        if (nextStepButton != null)
-        {
-            nextStepButton.gameObject.SetActive(true);
-            nextStepButton.onClick.AddListener(HandleNextStepButtonClick);
+            yield return null;
         }
     }
 
@@ -159,66 +202,74 @@ public class SiloManager : MonoBehaviour
         nextStepButton?.gameObject.SetActive(false);
         nextStepButton?.onClick.RemoveListener(HandleNextStepButtonClick);
 
+        // Destroy the last object when the "Next" button is clicked
+        if (lastObjectInstance != null)
+        {
+            Destroy(lastObjectInstance);
+            Debug.Log("Last object destroyed.");
+        }
+
         StartCoroutine(HandleFinalStage());
     }
 
     private IEnumerator HandleFinalStage()
     {
         GameObject finalPrefabInstance = null;
-        GameObject extraPrefabInstance = null;
+        GameObject extraFinalPrefabInstance = null;
 
         // Spawn the final prefab
-        if (FinalPrefab != null && FinalPrefabSpawnPoint != null)
+        if (finalPrefab != null && finalPrefabSpawnPoint != null)
         {
-            finalPrefabInstance = Instantiate(FinalPrefab, FinalPrefabSpawnPoint.position, Quaternion.identity);
-            Animator finalAnimator = finalPrefabInstance.GetComponent<Animator>();
+            finalPrefabInstance = Instantiate(finalPrefab, finalPrefabSpawnPoint.position, finalPrefabSpawnPoint.rotation);
+            finalPrefabInstance.transform.localScale = finalPrefab.transform.localScale;
 
-            if (finalAnimator != null)
-            {
-                Debug.Log("Triggering animation for FinalPrefab.");
-                finalAnimator.SetTrigger("PlayAnimation");
-            }
+            // Move the final prefab
+            Vector3 targetPosition = finalPrefabSpawnPoint.position + Vector3.forward * cameraDistance;
+            yield return StartCoroutine(MoveObject(finalPrefabInstance, targetPosition, transitionSpeed));
         }
 
-        // Wait for 2 seconds before spawning the extra final prefab
-        yield return new WaitForSeconds(2f);
+        // Wait before spawning the extra final prefab
+        yield return new WaitForSeconds(1f);
 
         // Spawn the extra final prefab
         if (extraFinalPrefab != null && extraFinalPrefabSpawnPoint != null)
         {
-            extraPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, Quaternion.identity);
-            Animator extraAnimator = extraPrefabInstance.GetComponent<Animator>();
+            extraFinalPrefabInstance = Instantiate(extraFinalPrefab, extraFinalPrefabSpawnPoint.position, extraFinalPrefabSpawnPoint.rotation);
+            extraFinalPrefabInstance.transform.localScale = extraFinalPrefab.transform.localScale;
 
-            if (extraAnimator != null)
-            {
-                Debug.Log("Triggering animation for extraFinalPrefab.");
-                extraAnimator.SetTrigger("PlayAnimation");
-            }
+            // Move the extra final prefab
+            Vector3 extraTargetPosition = extraFinalPrefabSpawnPoint.position + Vector3.forward * cameraDistance;
+            yield return StartCoroutine(MoveObject(extraFinalPrefabInstance, extraTargetPosition, transitionSpeed));
         }
 
-        // Handle FinalPrefab animation and destruction
-        if (finalPrefabInstance != null)
-        {
-            Animator finalAnimator = finalPrefabInstance.GetComponent<Animator>();
-            if (finalAnimator != null)
-            {
-                while (finalAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
-                {
-                    yield return null;
-                }
-            }
+        // Wait before final cleanup
+        yield return new WaitForSeconds(1f);
 
-            yield return new WaitForSeconds(3f); // Wait an additional 3 seconds
-            Destroy(finalPrefabInstance);
-            Debug.Log("FinalPrefab destroyed after 3 seconds.");
-        }
+        // Cleanup final prefabs
+        if (finalPrefabInstance != null) Destroy(finalPrefabInstance);
+        if (extraFinalPrefabInstance != null) Destroy(extraFinalPrefabInstance);
 
         // Show exit and restart buttons
         exitButton?.gameObject.SetActive(true);
         restartButton?.gameObject.SetActive(true);
-        Debug.Log("Exit and Restart buttons are now visible.");
     }
 
+    private IEnumerator MoveObject(GameObject obj, Vector3 targetPosition, float duration)
+    {
+        float elapsedTime = 0f;
+        Vector3 startPosition = obj.transform.position;
+
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / duration;
+
+            // Move the object
+            obj.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+
+            yield return null;
+        }
+    }
 
     public static void UnlockInteraction()
     {
@@ -233,9 +284,14 @@ public class SiloManager : MonoBehaviour
             audioSource.clip = sounds[index];
             audioSource.Play();
         }
-        else
+    }
+
+    public void NotifyObjectDestroyed()
+    {
+        totalDestroyedObjects++;
+        if (totalDestroyedObjects >= frontParts.Length)
         {
-            Debug.LogWarning($"No valid sound for index {index} or audio source is missing.");
+            StartCoroutine(SpawnAndAnimateObjects());
         }
     }
 }
