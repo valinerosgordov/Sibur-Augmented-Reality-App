@@ -2441,17 +2441,15 @@ MonoBehaviour:
     type: 2}
   finalPrefab: {fileID: 4259678756917460177, guid: d62302d0f9044224d98363d203905dd5,
     type: 3}
-  finalPrefabSpawnPoint: {fileID: 5543730847941483614, guid: d62302d0f9044224d98363d203905dd5,
-    type: 3}
+  finalPrefabDistance: 1
   extraFinalPrefab: {fileID: 4437403465816209802, guid: 9a4737afbba8594418c66706ec58f4aa,
     type: 3}
-  extraFinalPrefabSpawnPoint: {fileID: 3953881598520173360, guid: 9a4737afbba8594418c66706ec58f4aa,
-    type: 3}
+  extraFinalPrefabDistance: 1
   nextStepButton: {fileID: 4363278550079071351}
   exitButton: {fileID: 6714779626952727654}
   restartButton: {fileID: 7451947284176585408}
   transitionSpeed: 1
-  cameraDistance: 2
+  cameraDistance: 3
   delayBetweenObjects: 0.5
   transitionPrefabDistance: 1
 --- !u!23 &4220569277048176486
